@@ -94,6 +94,7 @@ class Learner:
             tqdm_loader = tqdm.tqdm(self.data_loader, desc=f'Start from {self.now_step} Steps')
             avg_stats = {'diff':None,'eq':None,'w':None,'grad':None}
             alpha = 0.98
+            self.network.train()
             for images, labels in tqdm_loader:
                 
                 images = images.to(self.device)
@@ -134,7 +135,7 @@ class Learner:
                     papt, paps = self.a_grad(t, s)
                     pbpt, pbps = self.b_grad(t, s)
                     delta = (a * v_t + b * jvp + papt * x_t + pbpt * F_value).view(equation_num, -1)
-                    w = 1.0 / (pbps * torch.norm(delta, p=2, dim=1).detach() + 1e-2)
+                    w = 1.0 / (pbpt.abs() * torch.norm(delta, p=2, dim=1).detach() + 1e-2)
                     equation_loss = (w * delta.pow(2).sum(dim=1)).mean()
                 else:
                     equation_loss = 0
@@ -160,14 +161,16 @@ class Learner:
                                         w = avg_stats['w'],
                                         grad = avg_stats['grad'])
                 self.now_step += 1
-                if self.now_step % 100 == 0:
+                if self.now_step % 500 == 0:
                     with torch.inference_mode():
+                        self.network.eval()
                         t = torch.ones((10,1,1,1), device = self.device)
                         s = torch.zeros((10,1,1,1), device = self.device)
                         x_t = torch.randn((10,1,32,32), device = self.device)
                         generated = self.solution_operator(x_t, t, s).clamp(min=-1,max=1)
                         os.makedirs('figs', exist_ok = True)
                         self.visualize_batch(f'figs/{self.now_step}.png',generated)
+                        self.network.train()
                         
                 if self.now_step >= self.total_steps:
                     return 
