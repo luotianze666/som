@@ -38,12 +38,12 @@ class Learner:
         self.beta = beta
         
         if a == None:
-            self.a = lambda t, s: self.alpha(s) / (self.alpha(t) + 1e-4)
+            self.a = lambda t, s: self.beta(s) / (self.beta(t) + 1e-4)
         else:
             self.a = a
             
         if b == None:
-            self.b = lambda t, s: (self.alpha(t) * self.beta(s) - self.alpha(s) * self.beta(t)) / (self.alpha(t) + 1e-4) 
+            self.b = lambda t, s: (self.alpha(s) * self.beta(t) - self.alpha(t) * self.beta(s)) / (self.beta(t) + 1e-4) 
         else:
             self.b = b
         
@@ -171,10 +171,6 @@ class Learner:
                         
                 if self.now_step >= self.total_steps:
                     return 
-                
-    def get_loss(self, x: torch.Tensor, t: torch.Tensor, s: torch.Tensor, c: torch.LongTensor):
-        # x: [B, C, H, W], t: [B, 1], s: [B, 1], c: [B, 1]
-        torch.autograd.functional.jvp()
     
     def solution_operator(self, x_t: torch.Tensor, t: torch.Tensor, s: torch.Tensor):
         return self.a(t, s) * x_t + self.b(t, s) * self.network(x_t , t , s)
@@ -194,6 +190,7 @@ class Learner:
             plt.axis('off')
         plt.tight_layout()
         plt.savefig(save_name)
+        plt.close()
           
 transform = transforms.Compose([
     transforms.Resize(32),
