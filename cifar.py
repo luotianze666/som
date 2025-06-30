@@ -187,7 +187,7 @@ class Learner:
         #plt.subplots_adjust(wspace=0, hspace=0)
         for i in range(n):
             plt.subplot(n_rows, n_cols, i + 1)
-            img = images[i].permute(1,2,0) / 2 + 0.5
+            img = images[i].cpu().permute(1,2,0) / 2 + 0.5
             plt.imshow(img, cmap = 'gray', vmin = 0, vmax = 1)
             if labels != None:
                 plt.title(f"{classes[labels[i]]} ({labels[i]})")
@@ -208,7 +208,7 @@ trainset = torchvision.datasets.MNIST(
 )
 trainloader = torch.utils.data.DataLoader(
     trainset, 
-    batch_size=4,
+    batch_size=128,
     shuffle=True, 
     num_workers=0
 ) 
