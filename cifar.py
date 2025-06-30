@@ -166,7 +166,8 @@ class Learner:
                         s = torch.zeros((10,1,1,1), device = self.device)
                         x_t = torch.randn((10,1,32,32), device = self.device)
                         generated = self.solution_operator(x_t, t, s).clamp(min=-1,max=1)
-                        self.visualize_batch(f'fig{self.now_step}.png',generated)
+                        os.makedirs('figs', exist_ok = True)
+                        self.visualize_batch(f'figs/{self.now_step}.png',generated)
                         
                 if self.now_step >= self.total_steps:
                     return 
@@ -222,7 +223,7 @@ trainloader = torch.utils.data.DataLoader(
 # print(predict.shape, jvp.shape)
 # print(model().shape)
 # print(config.data)
-learner = Learner('cpu',trainloader)
+learner = Learner('cuda',trainloader)
 learner.train()
 # print(learner.alpha_grad(torch.randn(5)))
 # print(learner.beta_grad(torch.randn(5)))
